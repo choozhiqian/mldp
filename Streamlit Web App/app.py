@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import requests
-from io import BytesIO
 import matplotlib.pyplot as plt
 import os
 
@@ -23,6 +21,13 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), "../Model Development/follo
 model = joblib.load(MODEL_PATH)
 
 # -----------------------------
+# Initialize Session State
+# -----------------------------
+for key in ["reach", "likes", "comments", "saves"]:
+    if key not in st.session_state:
+        st.session_state[key] = 0
+
+# -----------------------------
 # App Title & Instructions
 # -----------------------------
 st.title("📈 Instagram Followers Gain Predictor")
@@ -38,12 +43,12 @@ with st.form(key="input_form"):
     col1, col2 = st.columns(2)
     
     with col1:
-        reach = st.number_input("Reach", min_value=0, step=1, key="reach")
-        likes = st.number_input("Likes", min_value=0, step=1)
+        st.session_state["reach"] = st.number_input("Reach", min_value=0, step=1, value=st.session_state["reach"])
+        st.session_state["likes"] = st.number_input("Likes", min_value=0, step=1, value=st.session_state["likes"])
         
     with col2:
-        comments = st.number_input("Comments", min_value=0, step=1)
-        saves = st.number_input("Saves", min_value=0, step=1)
+        st.session_state["comments"] = st.number_input("Comments", min_value=0, step=1, value=st.session_state["comments"])
+        st.session_state["saves"] = st.number_input("Saves", min_value=0, step=1, value=st.session_state["saves"])
     
     submit_button = st.form_submit_button(label="Predict")
     clear_button = st.form_submit_button(label="Clear Inputs")
@@ -52,15 +57,18 @@ with st.form(key="input_form"):
 # Clear Inputs
 # -----------------------------
 if clear_button:
-    st.session_state["reach"] = 0
-    st.session_state["likes"] = 0
-    st.session_state["comments"] = 0
-    st.session_state["saves"] = 0
-    
+    for key in ["reach", "likes", "comments", "saves"]:
+        st.session_state[key] = 0
+
 # -----------------------------
 # Prediction Logic
 # -----------------------------
 if submit_button:
+    reach = st.session_state["reach"]
+    likes = st.session_state["likes"]
+    comments = st.session_state["comments"]
+    saves = st.session_state["saves"]
+
     if reach == 0:
         st.error("❌ Reach cannot be zero. Please enter a positive number.")
     else:
