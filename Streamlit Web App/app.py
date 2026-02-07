@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import os
+import requests
+from io import BytesIO
 import matplotlib.pyplot as plt
 
 # -----------------------------
@@ -15,10 +16,17 @@ st.set_page_config(
 )
 
 # -----------------------------
-# Load Trained Model
+# Load Trained Model from URL
 # -----------------------------
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../Model Development/followers_model.pkl")
-model = joblib.load(MODEL_PATH)
+MODEL_URL = "https://drive.google.com/uc?id=1EDx0nofrfgFAB4fDTjOdsTUxOHPUnBw0"  # direct download link
+
+@st.cache_data
+def load_model(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return joblib.load(BytesIO(response.content))
+
+model = load_model(MODEL_URL)
 
 # -----------------------------
 # App Title & Instructions
@@ -56,12 +64,11 @@ if clear_button:
 # Prediction Logic
 # -----------------------------
 if submit_button:
-    # Input validation
     if reach == 0:
         st.error("❌ Reach cannot be zero. Please enter a positive number.")
     else:
         total_engagement = likes + comments + saves
-        engagement_per_reach = total_engagement / reach  # safe division
+        engagement_per_reach = total_engagement / reach
         
         input_df = pd.DataFrame({
             'reach': [reach],
@@ -81,7 +88,7 @@ if submit_button:
         values = [likes, comments, saves]
         fig, ax = plt.subplots()
         ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
-        ax.axis('equal')  # Equal aspect ratio ensures pie is circular
+        ax.axis('equal')
         st.pyplot(fig)
 
 # -----------------------------
