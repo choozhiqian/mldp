@@ -4,7 +4,6 @@ import joblib
 import requests
 from io import BytesIO
 import matplotlib.pyplot as plt
-import os
 
 # -----------------------------
 # Page Config
@@ -17,10 +16,25 @@ st.set_page_config(
 )
 
 # -----------------------------
-# Load Trained Model
+# Load Trained Model from Google Drive
 # -----------------------------
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../Model Development/followers_model.pkl")
-model = joblib.load(MODEL_PATH)
+@st.cache_data(show_spinner=True)
+def load_model_from_drive(drive_url):
+    """
+    Load a joblib model from a Google Drive shareable link.
+    """
+    # Convert Google Drive share link to direct download
+    file_id = drive_url.split("/d/")[1].split("/")[0]
+    download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    
+    response = requests.get(download_url)
+    response.raise_for_status()
+    
+    model = joblib.load(BytesIO(response.content))
+    return model
+
+MODEL_URL = "https://drive.google.com/file/d/1EDx0nofrfgFAB4fDTjOdsTUxOHPUnBw0/view?usp=sharing"
+model = load_model_from_drive(MODEL_URL)
 
 # -----------------------------
 # App Title & Instructions
@@ -38,12 +52,12 @@ with st.form(key="input_form"):
     col1, col2 = st.columns(2)
     
     with col1:
-        reach = st.number_input("Reach", min_value=0, step=1)
-        likes = st.number_input("Likes", min_value=0, step=1)
+        reach = st.number_input("Reach", min_value=0, step=1, key="reach")
+        likes = st.number_input("Likes", min_value=0, step=1, key="likes")
         
     with col2:
-        comments = st.number_input("Comments", min_value=0, step=1)
-        saves = st.number_input("Saves", min_value=0, step=1)
+        comments = st.number_input("Comments", min_value=0, step=1, key="comments")
+        saves = st.number_input("Saves", min_value=0, step=1, key="saves")
     
     submit_button = st.form_submit_button(label="Predict")
     clear_button = st.form_submit_button(label="Clear Inputs")
@@ -52,7 +66,10 @@ with st.form(key="input_form"):
 # Clear Inputs
 # -----------------------------
 if clear_button:
-    st.experimental_rerun()
+    st.session_state["reach"] = 0
+    st.session_state["likes"] = 0
+    st.session_state["comments"] = 0
+    st.session_state["saves"] = 0
 
 # -----------------------------
 # Prediction Logic
