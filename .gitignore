@@ -7,9 +7,7 @@ venv/
 .env
 
 # ML models
-Model Development/*.pkl
-Model Development/*.joblib
-models/
+Model Development/
 
 # Data files (if large)
 data/raw/
