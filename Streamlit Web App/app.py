@@ -72,6 +72,7 @@ if clear_button:
 # Prediction Logic
 # -----------------------------
 if submit_button:
+    # Get values from session_state
     reach = st.session_state["reach"]
     likes = st.session_state["likes"]
     comments = st.session_state["comments"]
@@ -79,41 +80,44 @@ if submit_button:
 
     total_engagement = likes + comments + saves
 
-# Input validation
-if reach <= 0:
-    st.error("❌ Reach must be greater than zero.")
-elif total_engagement > reach:
-    st.error("❌ Total engagement cannot exceed reach.")
-elif total_engagement == 0:
-    st.error("❌ Engagement cannot be zero.")
-else:
-    engagement_per_reach = total_engagement / reach
-    
-    input_df = pd.DataFrame({
-        'reach': [reach],
-        'likes': [likes],
-        'comments': [comments],
-        'saves': [saves],
-        'total_engagement': [total_engagement],
-        'engagement_per_reach': [engagement_per_reach]
-    })
-    
-    prediction = model.predict(input_df)
-    
-    if pd.isna(prediction[0]):
-        st.error("❌ Model produced an invalid prediction. Please check your inputs.")
+    # -----------------------------
+    # Input validation
+    # -----------------------------
+    if reach <= 0:
+        st.error("❌ Reach must be greater than zero.")
+    elif total_engagement > reach:
+        st.error("❌ Total engagement cannot exceed reach.")
+    elif total_engagement == 0:
+        st.error("❌ Engagement cannot be zero.")
     else:
-        st.success(f"✅ Estimated Followers Gained: {int(prediction[0])}")
+        # Safe to predict
+        engagement_per_reach = total_engagement / reach
         
-        # Plot only if there is engagement
-        if total_engagement > 0:
-            st.subheader("Engagement Breakdown")
-            labels = ['Likes', 'Comments', 'Saves']
-            values = [likes, comments, saves]
-            fig, ax = plt.subplots()
-            ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
-            ax.axis('equal')
-            st.pyplot(fig)
+        input_df = pd.DataFrame({
+            'reach': [reach],
+            'likes': [likes],
+            'comments': [comments],
+            'saves': [saves],
+            'total_engagement': [total_engagement],
+            'engagement_per_reach': [engagement_per_reach]
+        })
+        
+        prediction = model.predict(input_df)
+        
+        if pd.isna(prediction[0]):
+            st.error("❌ Model produced an invalid prediction. Please check your inputs.")
+        else:
+            st.success(f"✅ Estimated Followers Gained: {int(prediction[0])}")
+
+            # Engagement Breakdown Chart
+            if total_engagement > 0:
+                st.subheader("Engagement Breakdown")
+                labels = ['Likes', 'Comments', 'Saves']
+                values = [likes, comments, saves]
+                fig, ax = plt.subplots()
+                ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+                ax.axis('equal')
+                st.pyplot(fig)
 
 
 # -----------------------------
