@@ -4,6 +4,7 @@ import joblib
 import requests
 from io import BytesIO
 import matplotlib.pyplot as plt
+import os
 
 # -----------------------------
 # Page Config
@@ -16,17 +17,10 @@ st.set_page_config(
 )
 
 # -----------------------------
-# Load Trained Model from URL
+# Load Trained Model
 # -----------------------------
-MODEL_URL = "https://drive.google.com/uc?id=1EDx0nofrfgFAB4fDTjOdsTUxOHPUnBw0"  # direct download link
-
-@st.cache_data
-def load_model(url):
-    response = requests.get(url)
-    response.raise_for_status()
-    return joblib.load(BytesIO(response.content))
-
-model = load_model(MODEL_URL)
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "../Model Development/followers_model.pkl")
+model = joblib.load(MODEL_PATH)
 
 # -----------------------------
 # App Title & Instructions
