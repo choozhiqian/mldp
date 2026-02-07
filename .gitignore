@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+.env
+
+# ML models
+Model Development/*.pkl
+Model Development/*.joblib
+models/
+
+# Data files (if large)
+data/raw/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Streamlit cache
+.streamlit/
+
+# OS
+.DS_Store
+Thumbs.db
